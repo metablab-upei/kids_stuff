@@ -266,6 +266,9 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;}
                 <option value="box_jumps">Box jumps</option>
                 <option value="lateral_bounds">Lateral bounds</option>
                 <option value="skater_hops">Skater hops (secs)</option>
+                <option value="split_squats">Split squats (each leg)</option>
+                <option value="sprints">Sprints / shuttle runs</option>
+                <option value="push_ups">Push-ups (or bench push-ups)</option>
                 <option value="sprint_relay">Sprint relays</option>
                 <option value="plyo_circuit">Full plyo circuit (rounds)</option>
                 <option value="reaction_cones">Reaction cones (mins)</option>
@@ -419,9 +422,9 @@ const DEFAULT_PRIZES = [
 ];
 
 const PRESET_COLORS = ['#2563a8','#c0392b','#1a7a4a','#8e44ad','#e67e22','#16a085','#d4ac0d','#2c3e50','#c0392b'];
-const PLYO_W = {jump_squats:1,lateral_shuffles:1,high_knees:1,broad_jumps:1,box_jumps:1,lateral_bounds:1,skater_hops:1,sprint_relay:5,plyo_circuit:30,reaction_cones:10};
+const PLYO_W = {jump_squats:1,lateral_shuffles:1,high_knees:1,broad_jumps:1,box_jumps:1,lateral_bounds:1,skater_hops:1,split_squats:1,sprints:1,push_ups:1,sprint_relay:5,plyo_circuit:30,reaction_cones:10};
 const SHOT_L = {wrist:'Wrist shots',backhand:'Backhand shots',snap:'Snap shots',onetimer:'One-timers'};
-const PLYO_L = {jump_squats:'Jump squats',lateral_shuffles:'Lateral shuffles',high_knees:'High knees',broad_jumps:'Broad jumps',box_jumps:'Box jumps',lateral_bounds:'Lateral bounds',skater_hops:'Skater hops',sprint_relay:'Sprint relays',plyo_circuit:'Plyo circuit',reaction_cones:'Reaction cones'};
+const PLYO_L = {jump_squats:'Jump squats',lateral_shuffles:'Lateral shuffles',high_knees:'High knees',broad_jumps:'Broad jumps',box_jumps:'Box jumps',lateral_bounds:'Lateral bounds',skater_hops:'Skater hops',split_squats:'Split squats',sprints:'Sprints / shuttles',push_ups:'Push-ups',sprint_relay:'Sprint relays',plyo_circuit:'Plyo circuit',reaction_cones:'Reaction cones'};
 const SKILL_L = {figureEight:'Toe-heel figure-8',wallPassFH:'10 FH passes',wallPassBH:'10 BH passes',coneWeave:'Cone weave ×5',cornerTargets:'Corner targets',dekeBackhand:'Deke → backhand',onetimer3:'One-timer ×3',fullSequence:'Full sequence ×5',beatRecord:'Beat record',doubleSession:'Double session',teachDrill:'Taught a drill'};
 
 const CHALLENGES = [
@@ -435,7 +438,9 @@ const CHALLENGES = [
   {cat:'plyo',icon:'➡️',name:'Broad jumps',tgt:'3×8 reps',desc:'Two-foot takeoff, jump as far forward as possible.'},
   {cat:'plyo',icon:'📦',name:'Box jumps',tgt:'3×10 reps',desc:'Sturdy step or box. Two-foot jump up, step down.'},
   {cat:'plyo',icon:'🦘',name:'Lateral bounds',tgt:'10 each leg',desc:'Single-leg sideways jump, land on opposite foot, hold 1 sec.'},
-  {cat:'plyo',icon:'🔥',name:'Full plyo circuit',tgt:'3 rounds',desc:'Jump squats (10) → lateral bounds (10ea) → skater hops (20s) → broad jumps (5).'},
+  {cat:'plyo',icon:'🦵',name:'Split squats',tgt:'3×10 each leg',desc:'One foot on a bench or box behind you, squat down on the front leg. Builds single-leg strength identical to the skating push-off.'},
+  {cat:'plyo',icon:'💨',name:'Sprints / shuttle runs',tgt:'6–10 reps',desc:'Full sprint or shuttle between two points ~10m apart. Rest 30 sec between reps. Builds explosive acceleration off the line.'},
+  {cat:'plyo',icon:'💪',name:'Push-ups',tgt:'3×10 reps',desc:'Full push-ups or hands on a bench for an easier version. Builds upper body and core stability for stick battles and shooting power.'},
   {cat:'skills',icon:'🏑',name:'Toe-heel figure-8',tgt:'60 sec',desc:'Stickhandle around 2 cones non-stop for 60 seconds.'},
   {cat:'skills',icon:'🧱',name:'Forehand wall passes',tgt:'10 clean',desc:'Pass off garage or rebounder. Same spot each time.'},
   {cat:'skills',icon:'🧱',name:'Backhand wall passes',tgt:'10 clean',desc:'Same but backhand only.'},
