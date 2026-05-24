@@ -3,170 +3,187 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Leo & Felix — Backyard Hockey Challenge</title>
+<title>Backyard Hockey Challenge</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
 <style>
 :root{
-  --blue:#1a3a5c; --blue-mid:#2563a8; --blue-light:#4a90d9;
+  --blue:#1a3a5c; --blue-mid:#2563a8;
   --red:#c0392b; --gold:#f0a500; --gold-dark:#c8860a;
-  --green:#1a7a4a; --green-light:#27ae60;
-  --white:#ffffff; --gray-light:#f2f5f8; --gray-mid:#ccd6e0;
+  --green:#1a7a4a; --white:#ffffff;
+  --gray-light:#f2f5f8; --gray-mid:#ccd6e0;
   --text:#0d1f2d; --text-muted:#4a6070;
-  --leo:#2563a8; --felix:#c0392b;
 }
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:'DM Sans',sans-serif;background:var(--blue);color:var(--text);min-height:100vh;overflow-x:hidden;}
 body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 59px,rgba(255,255,255,0.04) 60px),repeating-linear-gradient(90deg,transparent,transparent 59px,rgba(255,255,255,0.04) 60px);pointer-events:none;z-index:0;}
 .app{position:relative;z-index:1;max-width:980px;margin:0 auto;padding:0 16px 60px;}
 
-/* HEADER */
-header{text-align:center;padding:28px 0 20px;}
-.header-puck{display:inline-flex;align-items:center;justify-content:center;width:48px;height:48px;background:#111;border-radius:50%;margin-bottom:8px;border:3px solid rgba(255,255,255,0.15);}
-header h1{font-family:'Bebas Neue',sans-serif;font-size:clamp(32px,6vw,56px);color:var(--white);letter-spacing:2px;line-height:1;}
-header h1 .leo{color:#7ab3e8;} header h1 .felix{color:#e88a80;} header h1 .amp{color:rgba(255,255,255,0.3);}
-header p{font-size:13px;color:rgba(255,255,255,0.45);margin-top:5px;}
+header{text-align:center;padding:24px 0 16px;}
+.header-puck{display:inline-flex;align-items:center;justify-content:center;width:46px;height:46px;background:#111;border-radius:50%;margin-bottom:6px;border:3px solid rgba(255,255,255,0.15);}
+header h1{font-family:'Bebas Neue',sans-serif;font-size:clamp(28px,6vw,52px);color:#fff;letter-spacing:2px;line-height:1;}
+header h1 span{color:var(--gold);}
+header p{font-size:13px;color:rgba(255,255,255,0.4);margin-top:4px;}
 
-/* ── HERO SHOT CHART ── */
-.hero-chart-wrap{background:rgba(0,0,0,0.25);border-radius:20px;padding:20px 20px 16px;margin-bottom:16px;border:1px solid rgba(255,255,255,0.08);}
-.hero-chart-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px;}
-.hero-chart-title{font-family:'Bebas Neue',sans-serif;font-size:20px;color:rgba(255,255,255,0.9);letter-spacing:1px;}
-.hero-legend{display:flex;gap:16px;}
-.hero-legend-item{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:rgba(255,255,255,0.7);}
-.hero-legend-dot{width:10px;height:10px;border-radius:50%;}
-.hero-rows{display:flex;flex-direction:column;gap:14px;}
-.hero-row{}
-.hero-row-top{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:5px;}
+/* HERO CHART */
+.hero-wrap{background:rgba(0,0,0,0.25);border-radius:18px;padding:18px 18px 20px;margin-bottom:14px;border:1px solid rgba(255,255,255,0.08);}
+.hero-title{font-family:'Bebas Neue',sans-serif;font-size:18px;color:rgba(255,255,255,0.85);letter-spacing:1px;margin-bottom:14px;}
+.hero-rows{display:flex;flex-direction:column;gap:16px;}
+.hero-row-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px;}
 .hero-row-name{font-size:13px;font-weight:600;color:rgba(255,255,255,0.85);}
 .hero-row-nums{font-size:12px;color:rgba(255,255,255,0.5);}
 .hero-row-nums strong{font-size:14px;font-weight:600;color:rgba(255,255,255,0.9);}
-.hero-bar-track{position:relative;background:rgba(255,255,255,0.1);border-radius:6px;height:22px;overflow:visible;}
-.hero-bar-fill{height:22px;border-radius:6px;transition:width 0.8s cubic-bezier(.4,0,.2,1);position:relative;display:flex;align-items:center;justify-content:flex-end;padding-right:8px;min-width:4px;}
-.hero-bar-fill.leo{background:var(--leo);}
-.hero-bar-fill.felix{background:var(--felix);}
-.hero-bar-pct{font-size:10px;font-weight:700;color:rgba(255,255,255,0.9);white-space:nowrap;}
-/* milestone tick marks on track */
-.hero-tick{position:absolute;top:0;height:22px;width:1.5px;background:rgba(255,255,255,0.2);}
-.hero-tick-label{position:absolute;top:24px;font-size:9px;color:rgba(255,255,255,0.4);transform:translateX(-50%);white-space:nowrap;}
-/* prize flag at end */
-.prize-flag{position:absolute;right:-2px;top:-8px;display:flex;flex-direction:column;align-items:center;pointer-events:none;}
-.prize-flag-pole{width:1.5px;height:34px;background:var(--gold);opacity:0.7;}
-.prize-flag-banner{background:var(--gold);color:#000;font-size:9px;font-weight:700;padding:2px 6px;border-radius:3px;white-space:nowrap;letter-spacing:0.3px;}
+.hero-track{position:relative;background:rgba(255,255,255,0.1);border-radius:6px;height:22px;overflow:visible;margin-bottom:18px;}
+.hero-fill{height:22px;border-radius:6px;transition:width 0.8s cubic-bezier(.4,0,.2,1);position:relative;display:flex;align-items:center;justify-content:flex-end;padding-right:8px;min-width:3px;}
+.hero-fill-pct{font-size:10px;font-weight:700;color:rgba(255,255,255,0.9);}
+.hero-tick{position:absolute;top:0;height:22px;width:1.5px;background:rgba(255,255,255,0.18);}
+.hero-tick-lbl{position:absolute;top:25px;font-size:9px;color:rgba(255,255,255,0.35);transform:translateX(-50%);white-space:nowrap;}
+.prize-flag{position:absolute;right:-1px;top:-9px;display:flex;flex-direction:column;align-items:center;pointer-events:none;z-index:2;}
+.prize-flag-pole{width:1.5px;height:32px;background:var(--gold);opacity:0.75;}
+.prize-flag-txt{background:var(--gold);color:#000;font-size:9px;font-weight:700;padding:2px 6px;border-radius:3px;white-space:nowrap;}
 
 /* PLAYER TOGGLE */
-.player-toggle{display:flex;gap:10px;justify-content:center;margin-bottom:14px;}
-.ptoggle{font-family:'DM Sans',sans-serif;font-size:15px;font-weight:600;padding:9px 26px;border:2px solid rgba(255,255,255,0.18);border-radius:40px;background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.55);cursor:pointer;transition:all 0.18s;}
-.ptoggle.leo.active{background:var(--leo);border-color:var(--leo);color:#fff;}
-.ptoggle.felix.active{background:var(--felix);border-color:var(--felix);color:#fff;}
+.player-toggle{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:12px;}
+.ptoggle{font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;padding:8px 20px;border:2px solid rgba(255,255,255,0.15);border-radius:40px;background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.5);cursor:pointer;transition:all 0.15s;}
+.ptoggle.active{color:#fff;}
 .ptoggle:hover:not(.active){background:rgba(255,255,255,0.12);color:#fff;}
 
-/* GOALS GRID */
-.goals-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px;}
-@media(max-width:520px){.goals-grid{grid-template-columns:1fr 1fr;}}
-.goal-card{background:var(--white);border-radius:14px;padding:14px;border-top:4px solid transparent;position:relative;overflow:hidden;}
+/* GOAL CARDS */
+.goals-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px;}
+@media(max-width:500px){.goals-grid{grid-template-columns:1fr 1fr;}}
+.goal-card{background:#fff;border-radius:14px;padding:13px;border-top:4px solid transparent;position:relative;overflow:hidden;}
 .goal-card.shots{border-top-color:var(--green);}
-.goal-card.plyo{border-top-color:var(--felix);}
+.goal-card.plyo{border-top-color:var(--red);}
 .goal-card.skills{border-top-color:var(--gold);}
-.goal-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.8px;color:var(--text-muted);margin-bottom:4px;}
-.goal-nums{display:flex;align-items:baseline;gap:4px;margin-bottom:6px;}
-.goal-current{font-family:'Bebas Neue',sans-serif;font-size:32px;letter-spacing:0.5px;line-height:1;}
-.goal-current.shots{color:var(--green);}
-.goal-current.plyo{color:var(--felix);}
-.goal-current.skills{color:var(--gold-dark);}
-.goal-slash{font-size:14px;color:var(--gray-mid);}
-.goal-target{font-size:14px;font-weight:600;color:var(--text-muted);}
-.goal-unit{font-size:11px;color:var(--text-muted);margin-bottom:5px;}
-.bar-bg{background:var(--gray-light);border-radius:4px;height:5px;}
-.bar-fill{height:5px;border-radius:4px;transition:width 0.6s cubic-bezier(.4,0,.2,1);}
-.bar-fill.shots{background:var(--green);}
-.bar-fill.plyo{background:var(--felix);}
-.bar-fill.skills{background:var(--gold);}
-.goal-pct{font-size:10px;color:var(--text-muted);margin-top:3px;}
-.done-badge{position:absolute;top:8px;right:8px;background:var(--green);color:#fff;font-size:9px;font-weight:700;padding:2px 7px;border-radius:8px;}
+.goal-lbl{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.7px;color:var(--text-muted);margin-bottom:3px;}
+.goal-nums{display:flex;align-items:baseline;gap:4px;margin-bottom:5px;}
+.goal-cur{font-family:'Bebas Neue',sans-serif;font-size:30px;line-height:1;}
+.goal-cur.shots{color:var(--green);} .goal-cur.plyo{color:var(--red);} .goal-cur.skills{color:var(--gold-dark);}
+.goal-slash{font-size:13px;color:var(--gray-mid);}
+.goal-tgt{font-size:13px;font-weight:600;color:var(--text-muted);}
+.goal-unit{font-size:10px;color:var(--text-muted);margin-bottom:4px;}
+.bar-bg{background:var(--gray-light);border-radius:3px;height:5px;}
+.bar-fill{height:5px;border-radius:3px;transition:width 0.6s cubic-bezier(.4,0,.2,1);}
+.bar-fill.shots{background:var(--green);} .bar-fill.plyo{background:var(--red);} .bar-fill.skills{background:var(--gold);}
+.goal-pct{font-size:10px;color:var(--text-muted);margin-top:2px;}
+.done-badge{position:absolute;top:7px;right:7px;background:var(--green);color:#fff;font-size:9px;font-weight:700;padding:2px 6px;border-radius:7px;}
 
 /* MAIN PANEL */
-.main-panel{background:var(--white);border-radius:20px;overflow:hidden;margin-bottom:14px;}
+.main-panel{background:#fff;border-radius:20px;overflow:hidden;margin-bottom:14px;}
 .tab-bar{display:flex;background:var(--gray-light);border-bottom:1px solid var(--gray-mid);overflow-x:auto;scrollbar-width:none;}
 .tab-bar::-webkit-scrollbar{display:none;}
-.tab-btn{flex:1;min-width:78px;padding:12px 8px;font-family:'DM Sans',sans-serif;font-size:11px;font-weight:600;color:var(--text-muted);background:none;border:none;cursor:pointer;letter-spacing:0.4px;white-space:nowrap;border-bottom:3px solid transparent;transition:color 0.15s,border-color 0.15s,background 0.15s;text-transform:uppercase;}
+.tab-btn{flex:1;min-width:72px;padding:12px 6px;font-family:'DM Sans',sans-serif;font-size:11px;font-weight:600;color:var(--text-muted);background:none;border:none;cursor:pointer;letter-spacing:0.4px;white-space:nowrap;border-bottom:3px solid transparent;transition:all 0.15s;text-transform:uppercase;}
 .tab-btn:hover{background:rgba(0,0,0,0.03);color:var(--text);}
-.tab-btn.active{color:var(--blue);border-bottom-color:var(--blue-mid);background:var(--white);}
+.tab-btn.active{color:var(--blue);border-bottom-color:var(--blue-mid);background:#fff;}
 .panel-content{padding:20px;}
 .tab-pane{display:none;} .tab-pane.active{display:block;}
 .section-title{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);margin-bottom:10px;}
 
-/* LOG FORM */
-.log-form{display:grid;gap:10px;margin-bottom:18px;}
+/* FORMS */
+.log-form{display:grid;gap:10px;margin-bottom:16px;}
 .log-row{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;}
 .log-row-3{display:grid;grid-template-columns:1fr 1fr auto;gap:8px;align-items:center;}
-@media(max-width:500px){.log-row-3{grid-template-columns:1fr 1fr;}.log-row-3 .btn{grid-column:1/-1;}}
-select,input[type=number]{font-family:'DM Sans',sans-serif;font-size:14px;width:100%;padding:10px 14px;border:1.5px solid var(--gray-mid);border-radius:10px;background:var(--white);color:var(--text);cursor:pointer;}
+@media(max-width:490px){.log-row-3{grid-template-columns:1fr 1fr;}.log-row-3 .btn{grid-column:1/-1;}}
+select,input[type=number],input[type=text]{font-family:'DM Sans',sans-serif;font-size:14px;width:100%;padding:10px 14px;border:1.5px solid var(--gray-mid);border-radius:10px;background:#fff;color:var(--text);}
 select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236b7e8f' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:32px;}
 select:focus,input:focus{outline:none;border-color:var(--blue-mid);}
 input[type=number]{-moz-appearance:textfield;}
 input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;}
-.btn{font-family:'DM Sans',sans-serif;font-size:14px;padding:10px 18px;border:none;border-radius:10px;font-weight:600;cursor:pointer;transition:transform 0.1s;white-space:nowrap;}
+.btn{font-family:'DM Sans',sans-serif;font-size:14px;padding:10px 16px;border:none;border-radius:10px;font-weight:600;cursor:pointer;transition:transform 0.1s;white-space:nowrap;}
 .btn:active{transform:scale(0.97);}
-.btn-leo{background:var(--leo);color:#fff;} .btn-leo:hover{background:#1a4f8a;}
-.btn-felix{background:var(--felix);color:#fff;} .btn-felix:hover{background:#a02d22;}
+.btn-primary{background:var(--blue-mid);color:#fff;}
 .btn-sm{font-size:12px;padding:6px 12px;}
-.btn-ghost{background:var(--gray-light);color:var(--text-muted);} .btn-ghost:hover{background:var(--gray-mid);}
+.btn-ghost{background:var(--gray-light);color:var(--text-muted);}
+.btn-ghost:hover{background:var(--gray-mid);}
 .btn-danger{background:rgba(192,57,43,0.1);color:var(--red);}
-.input-hint{font-size:11px;color:var(--text-muted);padding:0 2px;margin-bottom:4px;}
+.btn-green{background:rgba(26,122,74,0.12);color:var(--green);}
+.btn-green:hover{background:rgba(26,122,74,0.2);}
+.input-hint{font-size:11px;color:var(--text-muted);margin-bottom:4px;}
 
 /* LOG LIST */
-.log-list{max-height:230px;overflow-y:auto;}
+.log-list{max-height:220px;overflow-y:auto;}
 .log-list::-webkit-scrollbar{width:4px;} .log-list::-webkit-scrollbar-thumb{background:var(--gray-mid);border-radius:2px;}
-.log-item{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--gray-light);font-size:13px;animation:fadeIn 0.22s ease;}
+.log-item{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--gray-light);font-size:13px;animation:fadeIn 0.2s ease;}
 .log-item:last-child{border-bottom:none;}
 @keyframes fadeIn{from{opacity:0;transform:translateY(-4px);}to{opacity:1;transform:translateY(0);}}
-.log-icon{width:26px;height:26px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;}
+.log-icon{width:26px;height:26px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;}
 .log-icon.shots{background:#e8f4ec;} .log-icon.plyo{background:#fde8e8;} .log-icon.skills{background:#fef6e4;}
 .log-name{flex:1;color:var(--text);line-height:1.3;}
 .log-amt{font-weight:700;font-size:13px;white-space:nowrap;}
 .log-amt.shots{color:var(--green);} .log-amt.plyo{color:var(--red);} .log-amt.skills{color:var(--gold-dark);}
-.log-time{font-size:10px;color:var(--text-muted);min-width:56px;text-align:right;}
-.empty-state{text-align:center;padding:26px;color:var(--text-muted);font-size:13px;}
-.actions-row{display:flex;gap:8px;justify-content:flex-end;margin-top:12px;}
+.log-time{font-size:10px;color:var(--text-muted);min-width:54px;text-align:right;}
+.empty-state{text-align:center;padding:24px;color:var(--text-muted);font-size:13px;}
+.actions-row{display:flex;gap:8px;justify-content:flex-end;margin-top:10px;}
 
-/* CHALLENGE CARDS */
+/* CHALLENGES */
 .ch-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
-@media(max-width:460px){.ch-grid{grid-template-columns:1fr;}}
-.ch-card{border:1.5px solid var(--gray-mid);border-radius:12px;padding:13px;}
-.ch-head{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:5px;}
-.ch-icon{font-size:18px;margin-right:6px;}
-.ch-meta{flex:1;}
-.ch-name{font-size:13px;font-weight:600;color:var(--text);line-height:1.3;margin-bottom:1px;}
+@media(max-width:450px){.ch-grid{grid-template-columns:1fr;}}
+.ch-card{border:1.5px solid var(--gray-mid);border-radius:12px;padding:12px;}
+.ch-head{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:4px;}
+.ch-icon{font-size:17px;margin-right:5px;}
+.ch-name{font-size:13px;font-weight:600;color:var(--text);line-height:1.3;}
 .ch-tgt{font-size:11px;font-weight:600;}
 .ch-tgt.shots{color:var(--green);} .ch-tgt.plyo{color:var(--red);} .ch-tgt.skills{color:var(--gold-dark);}
 .ch-desc{font-size:11px;color:var(--text-muted);line-height:1.5;}
-.ch-tag{font-size:10px;font-weight:600;padding:2px 7px;border-radius:8px;flex-shrink:0;}
-.tag-both{background:#e8ecf0;color:#1a3a5c;} .tag-leo{background:rgba(37,99,168,0.1);color:var(--leo);} .tag-felix{background:rgba(192,57,43,0.1);color:var(--felix);}
+.ch-tag{font-size:10px;font-weight:600;padding:2px 6px;border-radius:7px;flex-shrink:0;}
+.tag-both{background:#e8ecf0;color:#1a3a5c;}
 .cat-filter{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;}
-.cat-btn{font-size:11px;font-weight:600;padding:4px 11px;border-radius:20px;border:1.5px solid var(--gray-mid);background:var(--white);color:var(--text-muted);cursor:pointer;transition:all 0.15s;text-transform:uppercase;}
+.cat-btn{font-size:11px;font-weight:600;padding:4px 11px;border-radius:20px;border:1.5px solid var(--gray-mid);background:#fff;color:var(--text-muted);cursor:pointer;transition:all 0.15s;text-transform:uppercase;}
 .cat-btn.active{background:var(--blue-mid);color:#fff;border-color:var(--blue-mid);}
 
 /* CHARTS */
-.chart-wrap{margin-bottom:22px;}
+.chart-wrap{margin-bottom:20px;}
 
 /* MILESTONES */
 .ms-list{display:flex;flex-direction:column;gap:8px;}
-.ms-row{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:12px;background:var(--gray-light);border:1.5px solid transparent;}
+.ms-row{display:flex;align-items:center;gap:12px;padding:11px 13px;border-radius:11px;background:var(--gray-light);border:1.5px solid transparent;}
 .ms-row.done{background:rgba(26,122,74,0.07);border-color:rgba(26,122,74,0.25);}
 .ms-row.partial{background:rgba(37,99,168,0.05);border-color:rgba(37,99,168,0.2);}
-.ms-icon{font-size:22px;width:28px;text-align:center;flex-shrink:0;}
+.ms-icon{font-size:20px;width:26px;text-align:center;flex-shrink:0;}
 .ms-info{flex:1;}
-.ms-name{font-size:14px;font-weight:600;color:var(--text);}
+.ms-name{font-size:13px;font-weight:600;color:var(--text);}
 .ms-req{font-size:11px;color:var(--text-muted);margin-top:1px;}
-.ms-reward{font-size:12px;color:var(--green);font-weight:500;margin-top:2px;}
-.ms-status{font-size:11px;font-weight:700;padding:3px 9px;border-radius:9px;white-space:nowrap;}
+.ms-reward{font-size:12px;color:var(--green);font-weight:500;margin-top:1px;}
+.ms-status{font-size:11px;font-weight:700;padding:3px 9px;border-radius:8px;white-space:nowrap;}
 .ms-done{background:rgba(26,122,74,0.12);color:var(--green);}
 .ms-prog{background:rgba(37,99,168,0.1);color:var(--blue-mid);}
 .ms-lock{background:var(--gray-light);color:var(--text-muted);}
 .ms-bar-bg{background:var(--gray-mid);border-radius:3px;height:4px;margin-top:5px;}
 .ms-bar-fill{height:4px;border-radius:3px;transition:width 0.5s;}
-.ms-bar-fill.leo{background:var(--leo);} .ms-bar-fill.felix{background:var(--felix);}
+
+/* ── SETTINGS ── */
+.settings-section{margin-bottom:28px;}
+.settings-section-title{font-size:13px;font-weight:600;color:var(--text);margin-bottom:12px;padding-bottom:8px;border-bottom:1.5px solid var(--gray-mid);}
+
+/* Player cards in settings */
+.player-settings-list{display:flex;flex-direction:column;gap:10px;margin-bottom:12px;}
+.player-settings-card{background:var(--gray-light);border-radius:12px;padding:14px;border:1.5px solid var(--gray-mid);}
+.psc-header{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.psc-dot{width:12px;height:12px;border-radius:50%;flex-shrink:0;}
+.psc-name{font-size:14px;font-weight:600;color:var(--text);flex:1;}
+.psc-body{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;}
+@media(max-width:480px){.psc-body{grid-template-columns:1fr 1fr;}}
+.psc-field label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);display:block;margin-bottom:3px;}
+.psc-field input{font-size:13px;padding:8px 10px;}
+.psc-actions{display:flex;gap:6px;margin-top:10px;justify-content:flex-end;}
+
+/* Add player form */
+.add-player-form{background:var(--gray-light);border-radius:12px;padding:14px;border:1.5px dashed var(--gray-mid);}
+.add-player-grid{display:grid;grid-template-columns:1fr 1fr 80px;gap:8px;align-items:end;margin-bottom:8px;}
+@media(max-width:480px){.add-player-grid{grid-template-columns:1fr 1fr;}.add-player-grid .btn{grid-column:1/-1;}}
+.add-player-grid label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);display:block;margin-bottom:3px;}
+.color-row{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px;}
+.color-swatch{width:26px;height:26px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:transform 0.1s;}
+.color-swatch.selected{border-color:#fff;transform:scale(1.15);}
+
+/* Prize edit table */
+.prize-table{width:100%;border-collapse:collapse;}
+.prize-table th{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);text-align:left;padding:0 0 6px;}
+.prize-table td{padding:4px 0;}
+.prize-table td:first-child{font-size:12px;font-weight:600;color:var(--text-muted);width:90px;padding-right:8px;white-space:nowrap;}
+.prize-table td input{font-size:13px;padding:7px 10px;}
+.prize-save-row{display:flex;justify-content:flex-end;margin-top:10px;}
 
 /* TOAST */
 .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--text);color:#fff;padding:10px 20px;border-radius:40px;font-size:14px;font-weight:500;z-index:1000;transition:transform 0.3s cubic-bezier(.4,0,.2,1),opacity 0.3s;opacity:0;pointer-events:none;white-space:nowrap;}
@@ -175,12 +192,12 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;}
 /* UNLOCK */
 .overlay{position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:1999;opacity:0;pointer-events:none;transition:opacity 0.3s;}
 .overlay.show{opacity:1;pointer-events:all;}
-.unlock-card{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(0.85);background:#fff;border-radius:20px;padding:30px 36px;text-align:center;z-index:2000;opacity:0;pointer-events:none;transition:all 0.3s cubic-bezier(.4,0,.2,1);border:3px solid var(--gold);max-width:320px;width:90%;}
+.unlock-card{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(0.85);background:#fff;border-radius:20px;padding:28px 34px;text-align:center;z-index:2000;opacity:0;pointer-events:none;transition:all 0.3s cubic-bezier(.4,0,.2,1);border:3px solid var(--gold);max-width:310px;width:90%;}
 .unlock-card.show{opacity:1;transform:translate(-50%,-50%) scale(1);pointer-events:all;}
-.unlock-big{font-size:54px;margin-bottom:6px;}
-.unlock-card h2{font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--gold-dark);letter-spacing:1px;}
-.unlock-card p{font-size:14px;color:var(--text-muted);margin-top:4px;line-height:1.5;}
-.unlock-card .btn{margin-top:16px;}
+.unlock-big{font-size:50px;margin-bottom:6px;}
+.unlock-card h2{font-family:'Bebas Neue',sans-serif;font-size:26px;color:var(--gold-dark);letter-spacing:1px;}
+.unlock-card p{font-size:13px;color:var(--text-muted);margin-top:4px;line-height:1.5;}
+.unlock-card .btn{margin-top:14px;}
 </style>
 </head>
 <body>
@@ -188,33 +205,24 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;}
 
   <header>
     <div class="header-puck">
-      <svg width="26" height="26" viewBox="0 0 28 28" fill="none">
+      <svg width="24" height="24" viewBox="0 0 28 28" fill="none">
         <ellipse cx="14" cy="14" rx="12" ry="7" fill="#333"/>
         <ellipse cx="14" cy="12" rx="12" ry="7" fill="#111"/>
         <ellipse cx="14" cy="12" rx="9" ry="4.5" fill="#222"/>
       </svg>
     </div>
-    <h1><span class="leo">Leo</span> <span class="amp">&</span> <span class="felix">Felix</span><br>Backyard Hockey</h1>
-    <p>Summer 2026 · Charlottetown, PEI · June – August</p>
+    <h1 id="page-title">Backyard <span>Hockey</span> Challenge</h1>
+    <p>Summer 2026 · Charlottetown, PEI</p>
   </header>
 
-  <!-- HERO SHOT PROGRESS CHART -->
-  <div class="hero-chart-wrap" id="hero-chart-wrap">
-    <div class="hero-chart-header">
-      <div class="hero-chart-title">Shot goal progress</div>
-      <div class="hero-legend">
-        <div class="hero-legend-item"><div class="hero-legend-dot" style="background:var(--leo)"></div>Leo (age 8)</div>
-        <div class="hero-legend-item"><div class="hero-legend-dot" style="background:var(--felix)"></div>Felix (age 11)</div>
-      </div>
-    </div>
+  <!-- HERO SHOT CHART -->
+  <div class="hero-wrap">
+    <div class="hero-title">Shot goal progress 🏒</div>
     <div class="hero-rows" id="hero-rows"></div>
   </div>
 
   <!-- PLAYER TOGGLE -->
-  <div class="player-toggle">
-    <button class="ptoggle leo active" onclick="setPlayer('leo',this)">Leo (age 8)</button>
-    <button class="ptoggle felix" onclick="setPlayer('felix',this)">Felix (age 11)</button>
-  </div>
+  <div class="player-toggle" id="player-toggle"></div>
 
   <!-- GOAL CARDS -->
   <div class="goals-grid" id="goals-grid"></div>
@@ -226,12 +234,13 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;}
       <button class="tab-btn" onclick="showTab('challenges',this)">Challenges</button>
       <button class="tab-btn" onclick="showTab('charts',this)">Charts</button>
       <button class="tab-btn" onclick="showTab('milestones',this)">Milestones</button>
+      <button class="tab-btn" onclick="showTab('settings',this)">⚙ Settings</button>
     </div>
     <div class="panel-content">
 
-      <!-- LOG TAB -->
+      <!-- LOG -->
       <div class="tab-pane active" id="pane-log">
-        <div class="section-title">Log session for <span id="log-player-label">Leo</span></div>
+        <div class="section-title">Log session for <span id="log-player-label">—</span></div>
         <div class="log-form">
           <div>
             <div class="input-hint">Shots on net</div>
@@ -259,9 +268,9 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;}
                 <option value="skater_hops">Skater hops (secs)</option>
                 <option value="sprint_relay">Sprint relays</option>
                 <option value="plyo_circuit">Full plyo circuit (rounds)</option>
-                <option value="reaction_cones">Reaction cone drill (mins)</option>
+                <option value="reaction_cones">Reaction cones (mins)</option>
               </select>
-              <button class="btn btn-leo" id="log-btn" onclick="logSession()">+ Log</button>
+              <button class="btn btn-primary" id="log-btn" onclick="logSession()">+ Log</button>
             </div>
           </div>
           <div>
@@ -283,14 +292,14 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;}
           </div>
         </div>
         <div class="section-title">Session history</div>
-        <div class="log-list" id="log-list"><div class="empty-state">No sessions yet — log the first one above!</div></div>
+        <div class="log-list" id="log-list"><div class="empty-state">No sessions yet.</div></div>
         <div class="actions-row">
           <button class="btn btn-sm btn-ghost" onclick="exportCSV()">Export CSV</button>
           <button class="btn btn-sm btn-danger" onclick="confirmReset()">Reset player</button>
         </div>
       </div>
 
-      <!-- CHALLENGES TAB -->
+      <!-- CHALLENGES -->
       <div class="tab-pane" id="pane-challenges">
         <div class="cat-filter">
           <button class="cat-btn active" onclick="filterCat('all',this)">All</button>
@@ -301,26 +310,84 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;}
         <div class="ch-grid" id="ch-grid"></div>
       </div>
 
-      <!-- CHARTS TAB -->
+      <!-- CHARTS -->
       <div class="tab-pane" id="pane-charts">
         <div class="chart-wrap">
-          <div class="section-title">Shots over time (both players)</div>
+          <div class="section-title">Shots over time</div>
           <svg id="chart-shots" height="180" style="width:100%;"></svg>
         </div>
         <div class="chart-wrap">
-          <div class="section-title">Plyo reps over time (both players)</div>
+          <div class="section-title">Plyo reps over time</div>
           <svg id="chart-plyo" height="180" style="width:100%;"></svg>
         </div>
         <div class="chart-wrap">
-          <div class="section-title">Goal completion — <span id="chart-player-label">Leo</span></div>
+          <div class="section-title">Goal progress — <span id="chart-player-label">—</span></div>
           <svg id="chart-goals" height="150" style="width:100%;"></svg>
         </div>
       </div>
 
-      <!-- MILESTONES TAB -->
+      <!-- MILESTONES -->
       <div class="tab-pane" id="pane-milestones">
-        <div class="section-title">Milestones for <span id="ms-player-label">Leo</span></div>
+        <div class="section-title">Milestones — <span id="ms-player-label">—</span></div>
         <div class="ms-list" id="ms-list"></div>
+      </div>
+
+      <!-- SETTINGS -->
+      <div class="tab-pane" id="pane-settings">
+
+        <!-- Players -->
+        <div class="settings-section">
+          <div class="settings-section-title">Players</div>
+          <div class="player-settings-list" id="player-settings-list"></div>
+
+          <div class="add-player-form" id="add-player-form">
+            <div style="font-size:12px;font-weight:600;color:var(--text-muted);margin-bottom:10px;text-transform:uppercase;letter-spacing:0.5px;">Add a new player</div>
+            <div class="add-player-grid">
+              <div>
+                <label>Name</label>
+                <input type="text" id="new-name" placeholder="e.g. Jordan" maxlength="20" />
+              </div>
+              <div>
+                <label>Shot goal</label>
+                <input type="number" id="new-shots" placeholder="e.g. 2000" min="100" max="20000" />
+              </div>
+              <div>
+                <label>&nbsp;</label>
+                <button class="btn btn-green" onclick="addPlayer()">+ Add</button>
+              </div>
+            </div>
+            <div>
+              <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);margin-bottom:6px;">Colour</div>
+              <div class="color-row" id="color-swatches"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Prizes / Milestones -->
+        <div class="settings-section">
+          <div class="settings-section-title">Milestone prizes</div>
+          <p style="font-size:12px;color:var(--text-muted);margin-bottom:12px;line-height:1.6;">These prizes apply to every player. Milestone thresholds are set as percentages of each player's shot goal.</p>
+          <table class="prize-table">
+            <tr>
+              <th>Level</th>
+              <th>Prize</th>
+            </tr>
+            <tbody id="prize-rows"></tbody>
+          </table>
+          <div class="prize-save-row">
+            <button class="btn btn-primary btn-sm" onclick="savePrizes()">Save prizes</button>
+          </div>
+        </div>
+
+        <!-- Danger zone -->
+        <div class="settings-section">
+          <div class="settings-section-title">Data</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button class="btn btn-sm btn-ghost" onclick="exportAllCSV()">Export all players CSV</button>
+            <button class="btn btn-sm btn-danger" onclick="confirmResetAll()">Reset ALL data</button>
+          </div>
+        </div>
+
       </div>
 
     </div>
@@ -333,135 +400,145 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;}
   <div class="unlock-big" id="unlock-icon">🏆</div>
   <h2 id="unlock-title">Milestone!</h2>
   <p id="unlock-desc"></p>
-  <button class="btn btn-leo" id="unlock-btn" onclick="closeUnlock()">Let's go!</button>
+  <button class="btn btn-primary" onclick="closeUnlock()">Let's go!</button>
 </div>
 
 <script>
-// ─── PLAYERS ───────────────────────────────────────────────────────────────
-const PLAYERS = {
-  leo:   { name:'Leo',   age:8,  color:'#2563a8', shotGoal:3000, plyoGoal:2000, skillGoal:40 },
-  felix: { name:'Felix', age:11, color:'#c0392b', shotGoal:6000, plyoGoal:2000, skillGoal:40 },
-};
-
-// Prize tiers on the shot progress bar (as % of each player's goal)
-const PRIZE_TIERS = [
-  { pct:0.25, label:'25%', reward:'New tape + wristbands' },
-  { pct:0.50, label:'50%', reward:'New stick' },
-  { pct:0.75, label:'75%', reward:'Jersey' },
-  { pct:1.00, label:'100%', reward:'Pro game tickets!' },
+// ─── DEFAULT DATA ──────────────────────────────────────────────────────────
+const DEFAULT_PLAYERS = [
+  { id:'leo',   name:'Leo',   age:8,  color:'#2563a8', shotGoal:3000, plyoGoal:2000, skillGoal:40 },
+  { id:'felix', name:'Felix', age:11, color:'#c0392b', shotGoal:6000, plyoGoal:2000, skillGoal:40 },
 ];
 
-// Milestones (requirements scale with player's own goals)
-function getMilestones(pid) {
-  const p = PLAYERS[pid];
-  const s = p.shotGoal, pl = p.plyoGoal, sk = p.skillGoal;
-  return [
-    { id:'warmup',   icon:'🌱', name:'Just warming up',    reward:'Choose dinner',               reqs:{ shots:Math.round(s*0.07), plyo:200,             skills:3  } },
-    { id:'hustler',  icon:'💪', name:'Backyard Hustler',   reward:'New tape + wristbands',       reqs:{ shots:Math.round(s*0.17), plyo:Math.round(pl*0.25), skills:8  } },
-    { id:'prospect', icon:'⭐', name:'Prospect',           reward:'New stick or gloves',         reqs:{ shots:Math.round(s*0.33), plyo:Math.round(pl*0.50), skills:16 } },
-    { id:'aaa',      icon:'🔵', name:'AAA Grinder',        reward:'Jersey or equipment',         reqs:{ shots:Math.round(s*0.67), plyo:Math.round(pl*0.75), skills:25 } },
-    { id:'captain',  icon:'🏒', name:'Team Captain',       reward:'Pro game + restaurant',       reqs:{ shots:s,                  plyo:pl,                 skills:sk } },
-  ];
-}
+const DEFAULT_PRIZES = [
+  { id:'warmup',   pct:0.07, icon:'🌱', name:'Just warming up'  },
+  { id:'hustler',  pct:0.17, icon:'💪', name:'Backyard Hustler' },
+  { id:'prospect', pct:0.33, icon:'⭐', name:'Prospect'         },
+  { id:'aaa',      pct:0.67, icon:'🔵', name:'AAA Grinder'      },
+  { id:'captain',  pct:1.00, icon:'🏒', name:'Team Captain'     },
+];
 
-// Challenges
+const PRESET_COLORS = ['#2563a8','#c0392b','#1a7a4a','#8e44ad','#e67e22','#16a085','#d4ac0d','#2c3e50','#c0392b'];
+const PLYO_W = {jump_squats:1,lateral_shuffles:1,high_knees:1,broad_jumps:1,box_jumps:1,lateral_bounds:1,skater_hops:1,sprint_relay:5,plyo_circuit:30,reaction_cones:10};
+const SHOT_L = {wrist:'Wrist shots',backhand:'Backhand shots',snap:'Snap shots',onetimer:'One-timers'};
+const PLYO_L = {jump_squats:'Jump squats',lateral_shuffles:'Lateral shuffles',high_knees:'High knees',broad_jumps:'Broad jumps',box_jumps:'Box jumps',lateral_bounds:'Lateral bounds',skater_hops:'Skater hops',sprint_relay:'Sprint relays',plyo_circuit:'Plyo circuit',reaction_cones:'Reaction cones'};
+const SKILL_L = {figureEight:'Toe-heel figure-8',wallPassFH:'10 FH passes',wallPassBH:'10 BH passes',coneWeave:'Cone weave ×5',cornerTargets:'Corner targets',dekeBackhand:'Deke → backhand',onetimer3:'One-timer ×3',fullSequence:'Full sequence ×5',beatRecord:'Beat record',doubleSession:'Double session',teachDrill:'Taught a drill'};
+
 const CHALLENGES = [
-  { cat:'shots', age:'both', icon:'🥅', name:'Wrist shot session',       tgt:'25 shots',    desc:'Full wind-up, snap the wrist, follow through. Aim corner targets.' },
-  { cat:'shots', age:'both', icon:'🥅', name:'Backhand session',         tgt:'15 shots',    desc:'Backhand wrist shot from the pad. All on net.' },
-  { cat:'shots', age:'felix',icon:'🥅', name:'One-timer circuit',        tgt:'10 shots',    desc:'Roll puck off rebounder, one-timer on net. Count only clean hits.' },
-  { cat:'shots', age:'both', icon:'🎯', name:'Corner targets',           tgt:'5 min',       desc:'4 taped X\'s in net corners. How many in 5 minutes?' },
-  { cat:'shots', age:'felix',icon:'🏒', name:'Shoot in stride',          tgt:'20 shots',    desc:'Approach from behind the pad, release mid-stride. Builds game timing.' },
-  { cat:'plyo',  age:'both', icon:'⬆️', name:'Jump squat set',           tgt:'3×10 reps',   desc:'Feet shoulder-width, squat down, explode up. Land soft. Builds first-step power.' },
-  { cat:'plyo',  age:'both', icon:'↔️', name:'Lateral shuffles',         tgt:'3×20 reps',   desc:'Low stance, shuffle between cones 4 ft apart. Builds edge work.' },
-  { cat:'plyo',  age:'both', icon:'🦵', name:'Skater hops',              tgt:'3×30 secs',   desc:'Hop side to side on one foot, low and wide. Closest off-ice skating-stride drill.' },
-  { cat:'plyo',  age:'both', icon:'➡️', name:'Broad jumps',              tgt:'3×8 reps',    desc:'Two-foot takeoff, jump as far forward as possible. Stick the landing.' },
-  { cat:'plyo',  age:'both', icon:'📦', name:'Box jumps',                tgt:'3×10 reps',   desc:'Sturdy step or low box. Two-foot jump up, step down. Rest 30s between sets.' },
-  { cat:'plyo',  age:'both', icon:'🦘', name:'Lateral bounds',           tgt:'10 each leg', desc:'Single-leg sideways jump, land on opposite foot, hold 1 sec. Mimics skating stride.' },
-  { cat:'plyo',  age:'both', icon:'🔥', name:'Full plyo circuit',        tgt:'3 rounds',    desc:'Jump squats (10) → lateral bounds (10ea) → skater hops (20s) → broad jumps (5).' },
-  { cat:'plyo',  age:'felix',icon:'⚡', name:'Reaction cone sprint',     tgt:'5 minutes',   desc:'Parent calls a direction, Felix sprints to cone, shuffles back.' },
-  { cat:'skills',age:'both', icon:'🏑', name:'Toe-heel figure-8',        tgt:'60 sec',      desc:'Stickhandle around 2 cones non-stop for 60 seconds.' },
-  { cat:'skills',age:'both', icon:'🧱', name:'Forehand wall passes',     tgt:'10 clean',    desc:'Pass off garage or rebounder. Aim same spot each time.' },
-  { cat:'skills',age:'both', icon:'🧱', name:'Backhand wall passes',     tgt:'10 clean',    desc:'Same but backhand only.' },
-  { cat:'skills',age:'both', icon:'🔄', name:'Cone weave → shoot',       tgt:'5 clean',     desc:'3 cones in a line. Weave through, finish on net. All 5 clean.' },
-  { cat:'skills',age:'felix',icon:'🤸', name:'Handle → deke → backhand', tgt:'3 of 5',      desc:'Deke around a cone, finish high backhand. 3 of 5 reps clean.' },
-  { cat:'skills',age:'felix',icon:'💥', name:'Full sequence',            tgt:'5 clean',     desc:'Receive pass → handle course → deke → shot on target.' },
+  {cat:'shots',icon:'🥅',name:'Wrist shot session',tgt:'25 shots',desc:'Full wind-up, snap the wrist, follow through. Aim for corner targets.'},
+  {cat:'shots',icon:'🥅',name:'Backhand session',tgt:'15 shots',desc:'Backhand wrist shot from the pad. All on net.'},
+  {cat:'shots',icon:'🎯',name:'Corner targets',tgt:'5 min',desc:'4 taped X\'s in net corners. How many can you hit in 5 minutes?'},
+  {cat:'shots',icon:'🏒',name:'Shoot in stride',tgt:'20 shots',desc:'Approach from behind the pad, release mid-stride.'},
+  {cat:'plyo',icon:'⬆️',name:'Jump squat set',tgt:'3×10 reps',desc:'Squat down, explode up. Land soft. Builds first-step power.'},
+  {cat:'plyo',icon:'↔️',name:'Lateral shuffles',tgt:'3×20 reps',desc:'Low stance, shuffle between cones 4 ft apart. Builds edge work.'},
+  {cat:'plyo',icon:'🦵',name:'Skater hops',tgt:'3×30 secs',desc:'Hop side to side on one foot, low and wide.'},
+  {cat:'plyo',icon:'➡️',name:'Broad jumps',tgt:'3×8 reps',desc:'Two-foot takeoff, jump as far forward as possible.'},
+  {cat:'plyo',icon:'📦',name:'Box jumps',tgt:'3×10 reps',desc:'Sturdy step or box. Two-foot jump up, step down.'},
+  {cat:'plyo',icon:'🦘',name:'Lateral bounds',tgt:'10 each leg',desc:'Single-leg sideways jump, land on opposite foot, hold 1 sec.'},
+  {cat:'plyo',icon:'🔥',name:'Full plyo circuit',tgt:'3 rounds',desc:'Jump squats (10) → lateral bounds (10ea) → skater hops (20s) → broad jumps (5).'},
+  {cat:'skills',icon:'🏑',name:'Toe-heel figure-8',tgt:'60 sec',desc:'Stickhandle around 2 cones non-stop for 60 seconds.'},
+  {cat:'skills',icon:'🧱',name:'Forehand wall passes',tgt:'10 clean',desc:'Pass off garage or rebounder. Same spot each time.'},
+  {cat:'skills',icon:'🧱',name:'Backhand wall passes',tgt:'10 clean',desc:'Same but backhand only.'},
+  {cat:'skills',icon:'🔄',name:'Cone weave → shoot',tgt:'5 clean',desc:'3 cones in a line. Weave through, finish on net.'},
+  {cat:'skills',icon:'🤸',name:'Handle → deke → backhand',tgt:'3 of 5',desc:'Deke around a cone, finish high backhand.'},
 ];
-
-const PLYO_W = { jump_squats:1,lateral_shuffles:1,high_knees:1,broad_jumps:1,box_jumps:1,lateral_bounds:1,skater_hops:1,sprint_relay:5,plyo_circuit:30,reaction_cones:10 };
-const SHOT_L = { wrist:'Wrist shots',backhand:'Backhand shots',snap:'Snap shots',onetimer:'One-timers' };
-const PLYO_L = { jump_squats:'Jump squats',lateral_shuffles:'Lateral shuffles',high_knees:'High knees',broad_jumps:'Broad jumps',box_jumps:'Box jumps',lateral_bounds:'Lateral bounds',skater_hops:'Skater hops',sprint_relay:'Sprint relays',plyo_circuit:'Plyo circuit (rounds)',reaction_cones:'Reaction cones (mins)' };
-const SKILL_L = { figureEight:'Toe-heel figure-8',wallPassFH:'10 FH passes',wallPassBH:'10 BH passes',coneWeave:'Cone weave ×5',cornerTargets:'Corner targets',dekeBackhand:'Deke → backhand',onetimer3:'One-timer ×3',fullSequence:'Full sequence ×5',beatRecord:'Beat record',doubleSession:'Double session',teachDrill:'Taught a drill' };
 
 // ─── STATE ─────────────────────────────────────────────────────────────────
 function loadState() {
-  try { const s=localStorage.getItem('hockey_v4'); if(s) return JSON.parse(s); } catch(e){}
-  return { leo:{log:[],unlocked:[]}, felix:{log:[],unlocked:[]} };
+  try {
+    const s = localStorage.getItem('hockey_v5');
+    if (s) return JSON.parse(s);
+  } catch(e){}
+  const logs = {};
+  DEFAULT_PLAYERS.forEach(p => { logs[p.id] = {log:[], unlocked:[]}; });
+  return { players: JSON.parse(JSON.stringify(DEFAULT_PLAYERS)), prizes: JSON.parse(JSON.stringify(DEFAULT_PRIZES)), logs };
 }
-function saveState(){ localStorage.setItem('hockey_v4',JSON.stringify(state)); }
+function saveState(){ localStorage.setItem('hockey_v5', JSON.stringify(state)); }
 
 let state = loadState();
-let activePlayer = 'leo';
+// migrate: ensure every player has a logs entry
+state.players.forEach(p => { if(!state.logs[p.id]) state.logs[p.id]={log:[],unlocked:[]}; });
+
+let activePlayer = state.players[0].id;
 let activeCat = 'all';
+let selectedColor = PRESET_COLORS[2];
 let toastTimer;
 
-// ─── TOTALS ────────────────────────────────────────────────────────────────
-function getTotals(pid) {
+// ─── HELPERS ───────────────────────────────────────────────────────────────
+function getPlayer(pid){ return state.players.find(p=>p.id===pid); }
+function getTotals(pid){
+  const log = state.logs[pid]?.log || [];
+  // find index of last reset marker; count only entries after it
+  let start = 0;
+  for(let i=log.length-1;i>=0;i--){ if(log[i].reset){ start=i+1; break; } }
   let shots=0,plyo=0,skills=0;
-  state[pid].log.forEach(e=>{ shots+=(e.shots||0); plyo+=(e.plyo||0); skills+=(e.skill?1:0); });
+  log.slice(start).forEach(e=>{ shots+=(e.shots||0); plyo+=(e.plyo||0); skills+=(e.skill?1:0); });
   return {shots,plyo,skills};
 }
+function getMilestones(pid){
+  const p = getPlayer(pid);
+  return state.prizes.map(pr => ({
+    id: pr.id, icon: pr.icon, name: pr.name,
+    reward: pr.reward || '—',
+    reqs: { shots: Math.round(p.shotGoal * pr.pct), plyo: Math.round(p.plyoGoal * pr.pct), skills: Math.max(1, Math.round(p.skillGoal * pr.pct)) }
+  }));
+}
+function hexToRgb(h){ const r=parseInt(h.slice(1,3),16),g=parseInt(h.slice(3,5),16),b=parseInt(h.slice(5,7),16); return `${r},${g},${b}`; }
 
 // ─── HERO CHART ────────────────────────────────────────────────────────────
-function renderHeroChart() {
-  const rows = document.getElementById('hero-rows');
-  rows.innerHTML = ['leo','felix'].map(pid => {
-    const p = PLAYERS[pid];
-    const t = getTotals(pid);
+function renderHeroChart(){
+  document.getElementById('hero-rows').innerHTML = state.players.map(p => {
+    const t = getTotals(p.id);
     const pct = Math.min(100, (t.shots / p.shotGoal) * 100);
     const pctRnd = Math.round(pct);
-    // ticks at 25/50/75/100%
-    const ticks = [0.25,0.50,0.75].map(f => `
-      <div class="hero-tick" style="left:${f*100}%"></div>
-      <div class="hero-tick-label" style="left:${f*100}%">${Math.round(f*p.shotGoal).toLocaleString()}</div>
-    `).join('');
-    return `<div class="hero-row">
+    const ticks = [0.25,0.5,0.75].map(f =>
+      `<div class="hero-tick" style="left:${f*100}%"></div><div class="hero-tick-lbl" style="left:${f*100}%">${Math.round(f*p.shotGoal).toLocaleString()}</div>`
+    ).join('');
+    // find last prize
+    const lastPrize = [...state.prizes].reverse().find(pr => pr.reward);
+    const prizeLabel = lastPrize ? (lastPrize.reward.length > 18 ? lastPrize.reward.slice(0,17)+'…' : lastPrize.reward) : 'Goal!';
+    return `<div>
       <div class="hero-row-top">
         <div class="hero-row-name">${p.name}</div>
         <div class="hero-row-nums"><strong>${t.shots.toLocaleString()}</strong> / ${p.shotGoal.toLocaleString()} shots &nbsp;·&nbsp; ${pctRnd}%</div>
       </div>
-      <div class="hero-bar-track">
+      <div class="hero-track">
         ${ticks}
-        <div class="prize-flag" style="right:0">
-          <div class="prize-flag-banner">🏆 Pro game!</div>
-          <div class="prize-flag-pole"></div>
-        </div>
-        <div class="hero-bar-fill ${pid}" style="width:${pct}%">
-          ${pct > 8 ? `<span class="hero-bar-pct">${pctRnd}%</span>` : ''}
+        <div class="prize-flag"><div class="prize-flag-txt">🏆 ${prizeLabel}</div><div class="prize-flag-pole"></div></div>
+        <div class="hero-fill" style="background:${p.color};width:${pct}%">
+          ${pct>8?`<span class="hero-fill-pct">${pctRnd}%</span>`:''}
         </div>
       </div>
     </div>`;
   }).join('');
 }
 
+// ─── PLAYER TOGGLE ─────────────────────────────────────────────────────────
+function renderPlayerToggle(){
+  document.getElementById('player-toggle').innerHTML = state.players.map(p =>
+    `<button class="ptoggle${p.id===activePlayer?' active':''}" onclick="setPlayer('${p.id}',this)" style="${p.id===activePlayer?`background:${p.color};border-color:${p.color};`:''}">
+      ${p.name}
+    </button>`
+  ).join('');
+}
+
 // ─── GOAL CARDS ────────────────────────────────────────────────────────────
-function renderGoals() {
-  const p = PLAYERS[activePlayer];
-  const t = getTotals(activePlayer);
-  const defs = [
-    { key:'shots', label:'Shots on net', cur:t.shots, tgt:p.shotGoal, unit:'shots' },
-    { key:'plyo',  label:'Plyo reps',    cur:t.plyo,  tgt:p.plyoGoal, unit:'reps'  },
-    { key:'skills',label:'Skills done',  cur:t.skills,tgt:p.skillGoal,unit:'skills'},
+function renderGoals(){
+  const p = getPlayer(activePlayer); const t = getTotals(activePlayer);
+  const defs=[
+    {key:'shots',label:'Shots on net',cur:t.shots,tgt:p.shotGoal,unit:'shots'},
+    {key:'plyo', label:'Plyo reps',   cur:t.plyo, tgt:p.plyoGoal,unit:'reps'},
+    {key:'skills',label:'Skills done',cur:t.skills,tgt:p.skillGoal,unit:'skills'},
   ];
-  document.getElementById('goals-grid').innerHTML = defs.map(d => {
-    const pct = Math.min(100, Math.round((d.cur/d.tgt)*100));
-    const done = d.cur >= d.tgt;
+  document.getElementById('goals-grid').innerHTML = defs.map(d=>{
+    const pct=Math.min(100,Math.round((d.cur/d.tgt)*100));
     return `<div class="goal-card ${d.key}">
-      ${done?'<div class="done-badge">DONE ✓</div>':''}
-      <div class="goal-label">${d.label}</div>
+      ${d.cur>=d.tgt?'<div class="done-badge">DONE ✓</div>':''}
+      <div class="goal-lbl">${d.label}</div>
       <div class="goal-nums">
-        <div class="goal-current ${d.key}">${d.cur.toLocaleString()}</div>
+        <div class="goal-cur ${d.key}">${d.cur.toLocaleString()}</div>
         <div class="goal-slash">/</div>
-        <div class="goal-target">${d.tgt.toLocaleString()}</div>
+        <div class="goal-tgt">${d.tgt.toLocaleString()}</div>
       </div>
       <div class="goal-unit">${d.unit}</div>
       <div class="bar-bg"><div class="bar-fill ${d.key}" style="width:${pct}%"></div></div>
@@ -471,22 +548,21 @@ function renderGoals() {
 }
 
 // ─── LOG ───────────────────────────────────────────────────────────────────
-function logSession() {
-  const shots = parseInt(document.getElementById('input-shots').value)||0;
-  const shotType = document.getElementById('select-shots').value;
-  const plyoRaw = parseInt(document.getElementById('input-plyo').value)||0;
-  const plyoType = document.getElementById('select-plyo').value;
-  const skill = document.getElementById('select-skill').value;
+function logSession(){
+  const shots=parseInt(document.getElementById('input-shots').value)||0;
+  const shotType=document.getElementById('select-shots').value;
+  const plyoRaw=parseInt(document.getElementById('input-plyo').value)||0;
+  const plyoType=document.getElementById('select-plyo').value;
+  const skill=document.getElementById('select-skill').value;
   if(!shots&&!plyoRaw&&!skill){ showToast('Enter at least one value'); return; }
-
-  const prev = getTotals(activePlayer);
-  state[activePlayer].log.push({ ts:Date.now(), shots, shotType, plyoRaw, plyo:plyoRaw*(PLYO_W[plyoType]||1), plyoType, skill:skill||null });
+  const prev=getTotals(activePlayer);
+  state.logs[activePlayer].log.push({ts:Date.now(),shots,shotType,plyoRaw,plyo:plyoRaw*(PLYO_W[plyoType]||1),plyoType,skill:skill||null});
   saveState();
   document.getElementById('input-shots').value='';
   document.getElementById('input-plyo').value='';
   document.getElementById('select-skill').value='';
-  const next = getTotals(activePlayer);
-  const newUnlocks = checkMilestones(prev,next);
+  const next=getTotals(activePlayer);
+  const newUnlocks=checkMilestones(prev,next);
   updateAll();
   let msg=[];
   if(shots) msg.push(shots+' shots');
@@ -496,27 +572,28 @@ function logSession() {
   if(newUnlocks.length) setTimeout(()=>showUnlock(newUnlocks[0]),500);
 }
 
-function checkMilestones(prev,next) {
-  const ms = getMilestones(activePlayer);
-  const unlocked = state[activePlayer].unlocked;
+function checkMilestones(prev,next){
+  const ms=getMilestones(activePlayer);
+  const unlocked=state.logs[activePlayer].unlocked;
   const newOnes=[];
   ms.forEach(m=>{
     if(unlocked.includes(m.id)) return;
     const r=m.reqs;
-    const prevMet=(!r.shots||prev.shots>=r.shots)&&(!r.plyo||prev.plyo>=r.plyo)&&(!r.skills||prev.skills>=r.skills);
-    const nowMet =(!r.shots||next.shots>=r.shots)&&(!r.plyo||next.plyo>=r.plyo)&&(!r.skills||next.skills>=r.skills);
-    if(!prevMet&&nowMet){ unlocked.push(m.id); newOnes.push(m); }
+    const was=(!r.shots||prev.shots>=r.shots)&&(!r.plyo||prev.plyo>=r.plyo)&&(!r.skills||prev.skills>=r.skills);
+    const now=(!r.shots||next.shots>=r.shots)&&(!r.plyo||next.plyo>=r.plyo)&&(!r.skills||next.skills>=r.skills);
+    if(!was&&now){ unlocked.push(m.id); newOnes.push(m); }
   });
   saveState(); return newOnes;
 }
 
-function renderLog() {
-  const log=[...state[activePlayer].log].reverse();
+function renderLog(){
+  const log=[...(state.logs[activePlayer]?.log||[])].reverse();
   const el=document.getElementById('log-list');
   if(!log.length){ el.innerHTML='<div class="empty-state">No sessions yet — log the first one above!</div>'; return; }
   el.innerHTML=log.map(e=>{
     const d=new Date(e.ts);
     const time=d.toLocaleDateString('en-CA',{month:'short',day:'numeric'})+' '+d.toLocaleTimeString('en-CA',{hour:'2-digit',minute:'2-digit'});
+    if(e.reset) return `<div class="log-item"><span class="log-icon" style="background:#fff3cd">🔄</span><span class="log-name" style="color:var(--text-muted);font-style:italic">Score reset</span><span class="log-time">${time}</span></div>`;
     let parts=[];
     if(e.shots) parts.push(`<span class="log-icon shots">🏒</span><span class="log-name">${SHOT_L[e.shotType]||'Shots'}</span><span class="log-amt shots">+${e.shots}</span>`);
     if(e.plyoRaw) parts.push(`<span class="log-icon plyo">⚡</span><span class="log-name">${PLYO_L[e.plyoType]||'Plyo'}</span><span class="log-amt plyo">+${e.plyoRaw}</span>`);
@@ -526,53 +603,42 @@ function renderLog() {
 }
 
 // ─── CHALLENGES ────────────────────────────────────────────────────────────
-function renderChallenges() {
-  const f = activeCat==='all' ? CHALLENGES : CHALLENGES.filter(c=>c.cat===activeCat);
-  document.getElementById('ch-grid').innerHTML = f.map(c=>{
-    const tagC = c.age==='both'?'tag-both':(c.age==='leo'?'tag-leo':'tag-felix');
-    const tagL = c.age==='both'?'both':(c.age==='leo'?'Leo':'Felix');
-    return `<div class="ch-card">
+function renderChallenges(){
+  const f=activeCat==='all'?CHALLENGES:CHALLENGES.filter(c=>c.cat===activeCat);
+  document.getElementById('ch-grid').innerHTML=f.map(c=>`
+    <div class="ch-card">
       <div class="ch-head">
         <span class="ch-icon">${c.icon}</span>
-        <div class="ch-meta"><div class="ch-name">${c.name}</div><div class="ch-tgt ${c.cat}">${c.tgt}</div></div>
-        <span class="ch-tag ${tagC}">${tagL}</span>
+        <div><div class="ch-name">${c.name}</div><div class="ch-tgt ${c.cat}">${c.tgt}</div></div>
+        <span class="ch-tag tag-both">both</span>
       </div>
       <div class="ch-desc">${c.desc}</div>
-    </div>`;
-  }).join('');
+    </div>`).join('');
 }
 function filterCat(cat,btn){ activeCat=cat; document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('active')); btn.classList.add('active'); renderChallenges(); }
 
-// ─── D3 CHARTS ─────────────────────────────────────────────────────────────
-function renderCharts() {
-  renderLineChart('chart-shots','shots');
-  renderLineChart('chart-plyo','plyo');
-  renderGoalBars();
-}
+// ─── CHARTS ────────────────────────────────────────────────────────────────
+function renderCharts(){ renderLineChart('chart-shots','shots'); renderLineChart('chart-plyo','plyo'); renderGoalBars(); }
 
-function renderLineChart(svgId, field) {
+function renderLineChart(svgId,field){
   const svg=d3.select('#'+svgId); svg.selectAll('*').remove();
   const W=document.getElementById(svgId).parentElement.offsetWidth-40;
-  const H=180, m={top:12,right:24,bottom:28,left:44};
-  const w=W-m.left-m.right, h=H-m.top-m.bottom;
+  const H=180,m={top:12,right:24,bottom:28,left:44};
+  const w=W-m.left-m.right,h=H-m.top-m.bottom;
   svg.attr('width',W).attr('height',H);
   const g=svg.append('g').attr('transform',`translate(${m.left},${m.top})`);
 
   function cum(pid){
-    const log=state[pid].log; if(!log.length) return [];
+    const log=(state.logs[pid]?.log||[]); if(!log.length) return [];
     const byDay={};
     log.forEach(e=>{ const day=new Date(e.ts).toLocaleDateString('en-CA'); byDay[day]=(byDay[day]||0)+(e[field]||0); });
     const days=Object.keys(byDay).sort(); let acc=0;
     return days.map(d=>{ acc+=byDay[d]; return {date:new Date(d),v:acc}; });
   }
 
-  const dLeo=cum('leo'), dFelix=cum('felix');
-  const all=[...dLeo,...dFelix];
-
-  // goal lines (different per player for shots)
-  const goalLeo   = field==='shots' ? PLAYERS.leo.shotGoal   : PLAYERS.leo.plyoGoal;
-  const goalFelix = field==='shots' ? PLAYERS.felix.shotGoal : PLAYERS.felix.plyoGoal;
-  const yMax=Math.max(d3.max(all,d=>d.v)||0, goalFelix*0.15);
+  const datasets=state.players.map(p=>({p,data:cum(p.id)}));
+  const all=datasets.flatMap(d=>d.data);
+  const maxGoal=Math.max(...state.players.map(p=>field==='shots'?p.shotGoal:p.plyoGoal));
 
   if(!all.length){
     g.append('text').attr('x',w/2).attr('y',h/2).attr('text-anchor','middle').attr('fill','#6b7e8f').attr('font-size',12).text('Log sessions to see progress');
@@ -580,13 +646,15 @@ function renderLineChart(svgId, field) {
   }
 
   const xExt=d3.extent(all,d=>d.date);
+  const yMax=Math.max(d3.max(all,d=>d.v)||0,maxGoal*0.15);
   const x=d3.scaleTime().domain(xExt).range([0,w]);
-  const y=d3.scaleLinear().domain([0,Math.max(yMax*1.1,goalFelix)]).range([h,0]);
+  const y=d3.scaleLinear().domain([0,Math.max(yMax*1.1,maxGoal)]).range([h,0]);
 
-  // goal lines
-  [[goalLeo,'#2563a8',`Leo goal: ${goalLeo.toLocaleString()}`],[goalFelix,'#c0392b',`Felix goal: ${goalFelix.toLocaleString()}`]].forEach(([gv,gc,gl])=>{
-    g.append('line').attr('x1',0).attr('x2',w).attr('y1',y(gv)).attr('y2',y(gv)).attr('stroke',gc).attr('stroke-width',1).attr('stroke-dasharray','4,3').attr('opacity',0.4);
-    g.append('text').attr('x',w-2).attr('y',y(gv)-3).attr('text-anchor','end').attr('fill',gc).attr('font-size',9).attr('opacity',0.65).text(gl);
+  // goal lines per player
+  state.players.forEach(p=>{
+    const goal=field==='shots'?p.shotGoal:p.plyoGoal;
+    g.append('line').attr('x1',0).attr('x2',w).attr('y1',y(goal)).attr('y2',y(goal)).attr('stroke',p.color).attr('stroke-width',1).attr('stroke-dasharray','4,3').attr('opacity',0.4);
+    g.append('text').attr('x',w-2).attr('y',y(goal)-3).attr('text-anchor','end').attr('fill',p.color).attr('font-size',9).attr('opacity',0.6).text(`${p.name}: ${goal.toLocaleString()}`);
   });
 
   g.append('g').call(d3.axisLeft(y).ticks(4).tickSize(-w).tickFormat(d3.format(',.0f')))
@@ -599,73 +667,166 @@ function renderLineChart(svgId, field) {
     .call(a=>a.selectAll('.tick text').attr('fill','#6b7e8f').attr('font-size',10));
 
   const line=d3.line().x(d=>x(d.date)).y(d=>y(d.v)).curve(d3.curveMonotoneX);
-  if(dLeo.length>=1){ if(dLeo.length>1) g.append('path').datum(dLeo).attr('fill','none').attr('stroke','#2563a8').attr('stroke-width',2.5).attr('d',line); g.selectAll('.dL').data(dLeo).enter().append('circle').attr('cx',d=>x(d.date)).attr('cy',d=>y(d.v)).attr('r',3.5).attr('fill','#2563a8'); }
-  if(dFelix.length>=1){ if(dFelix.length>1) g.append('path').datum(dFelix).attr('fill','none').attr('stroke','#c0392b').attr('stroke-width',2.5).attr('d',line); g.selectAll('.dF').data(dFelix).enter().append('circle').attr('cx',d=>x(d.date)).attr('cy',d=>y(d.v)).attr('r',3.5).attr('fill','#c0392b'); }
+  datasets.forEach(({p,data})=>{
+    if(data.length>1) g.append('path').datum(data).attr('fill','none').attr('stroke',p.color).attr('stroke-width',2.5).attr('d',line);
+    g.selectAll(null).data(data).enter().append('circle').attr('cx',d=>x(d.date)).attr('cy',d=>y(d.v)).attr('r',3.5).attr('fill',p.color);
+  });
 
+  // legend
   const leg=svg.append('g').attr('transform',`translate(${m.left+4},${m.top})`);
-  leg.append('circle').attr('cx',5).attr('cy',5).attr('r',4).attr('fill','#2563a8');
-  leg.append('text').attr('x',13).attr('y',9).attr('fill','#4a6070').attr('font-size',10).text('Leo');
-  leg.append('circle').attr('cx',5).attr('cy',18).attr('r',4).attr('fill','#c0392b');
-  leg.append('text').attr('x',13).attr('y',22).attr('fill','#4a6070').attr('font-size',10).text('Felix');
+  state.players.forEach((p,i)=>{
+    leg.append('circle').attr('cx',5).attr('cy',5+i*14).attr('r',4).attr('fill',p.color);
+    leg.append('text').attr('x',13).attr('y',9+i*14).attr('fill','#4a6070').attr('font-size',10).text(p.name);
+  });
 }
 
-function renderGoalBars() {
+function renderGoalBars(){
   const svg=d3.select('#chart-goals'); svg.selectAll('*').remove();
   const W=document.getElementById('chart-goals').parentElement.offsetWidth-40;
-  const H=150, m={top:8,right:20,bottom:24,left:68};
-  const w=W-m.left-m.right, h=H-m.top-m.bottom;
+  const H=150,m={top:8,right:20,bottom:24,left:68};
+  const w=W-m.left-m.right,h=H-m.top-m.bottom;
   svg.attr('width',W).attr('height',H);
   const g=svg.append('g').attr('transform',`translate(${m.left},${m.top})`);
-  const p=PLAYERS[activePlayer]; const t=getTotals(activePlayer);
-  const cats=[
-    {label:'Shots', cur:Math.min(t.shots,p.shotGoal), max:p.shotGoal},
-    {label:'Plyo',  cur:Math.min(t.plyo, p.plyoGoal), max:p.plyoGoal},
-    {label:'Skills',cur:Math.min(t.skills,p.skillGoal),max:p.skillGoal},
-  ];
-  const col=PLAYERS[activePlayer].color;
+  const p=getPlayer(activePlayer); const t=getTotals(activePlayer);
+  const cats=[{label:'Shots',cur:Math.min(t.shots,p.shotGoal),max:p.shotGoal},{label:'Plyo',cur:Math.min(t.plyo,p.plyoGoal),max:p.plyoGoal},{label:'Skills',cur:Math.min(t.skills,p.skillGoal),max:p.skillGoal}];
   const y=d3.scaleBand().domain(cats.map(c=>c.label)).range([0,h]).padding(0.4);
   cats.forEach(c=>{
     const xS=d3.scaleLinear().domain([0,c.max]).range([0,w]);
     g.append('rect').attr('x',0).attr('y',y(c.label)).attr('width',w).attr('height',y.bandwidth()).attr('fill','#f2f5f8').attr('rx',4);
-    g.append('rect').attr('x',0).attr('y',y(c.label)).attr('width',xS(c.cur)).attr('height',y.bandwidth()).attr('fill',col).attr('rx',4).attr('opacity',0.85);
-    const pct=Math.round((c.cur/c.max)*100);
-    g.append('text').attr('x',xS(c.cur)+4).attr('y',y(c.label)+y.bandwidth()/2+4).attr('fill','#4a6070').attr('font-size',10).text(pct+'%');
+    g.append('rect').attr('x',0).attr('y',y(c.label)).attr('width',xS(c.cur)).attr('height',y.bandwidth()).attr('fill',p.color).attr('rx',4).attr('opacity',0.85);
+    g.append('text').attr('x',xS(c.cur)+4).attr('y',y(c.label)+y.bandwidth()/2+4).attr('fill','#4a6070').attr('font-size',10).text(Math.round((c.cur/c.max)*100)+'%');
     g.append('text').attr('x',-6).attr('y',y(c.label)+y.bandwidth()/2+4).attr('text-anchor','end').attr('fill','#4a6070').attr('font-size',11).text(c.label);
   });
-  g.append('g').attr('transform',`translate(0,${h})`).call(d3.axisBottom(d3.scaleLinear().domain([0,1]).range([0,w])).ticks(0)).call(a=>a.select('.domain').attr('stroke','#ccd6e0'));
 }
 
 // ─── MILESTONES ────────────────────────────────────────────────────────────
-function renderMilestones() {
-  const pid=activePlayer; const p=PLAYERS[pid];
+function renderMilestones(){
+  const pid=activePlayer; const p=getPlayer(pid);
   document.getElementById('ms-player-label').textContent=p.name;
-  const t=getTotals(pid); const unlocked=state[pid].unlocked;
-  const ms=getMilestones(pid);
-  document.getElementById('ms-list').innerHTML=ms.map(m=>{
+  const t=getTotals(pid); const unlocked=state.logs[pid].unlocked;
+  document.getElementById('ms-list').innerHTML=getMilestones(pid).map(m=>{
     const done=unlocked.includes(m.id); const r=m.reqs;
     const sp=r.shots?Math.min(100,Math.round((t.shots/r.shots)*100)):100;
     const pp=r.plyo?Math.min(100,Math.round((t.plyo/r.plyo)*100)):100;
     const skp=r.skills?Math.min(100,Math.round((t.skills/r.skills)*100)):100;
-    const overall=Math.round((sp+pp+skp)/3);
-    const rowC=done?'done':(overall>0?'partial':'');
-    const stC=done?'ms-done':(overall>0?'ms-prog':'ms-lock');
-    const stL=done?'Achieved ✓':(overall+'%');
-    const reqStr=[
-      r.shots?`${t.shots.toLocaleString()}/${r.shots.toLocaleString()} shots`:'',
-      r.plyo?`${t.plyo.toLocaleString()}/${r.plyo.toLocaleString()} plyo`:'',
-      r.skills?`${t.skills}/${r.skills} skills`:'',
-    ].filter(Boolean).join(' · ');
+    const ov=Math.round((sp+pp+skp)/3);
+    const rowC=done?'done':(ov>0?'partial':'');
+    const stC=done?'ms-done':(ov>0?'ms-prog':'ms-lock');
+    const req=[r.shots?`${t.shots.toLocaleString()}/${r.shots.toLocaleString()} shots`:'',r.plyo?`${t.plyo.toLocaleString()}/${r.plyo.toLocaleString()} plyo`:'',r.skills?`${t.skills}/${r.skills} skills`:''].filter(Boolean).join(' · ');
     return `<div class="ms-row ${rowC}">
       <div class="ms-icon">${m.icon}</div>
       <div class="ms-info">
         <div class="ms-name">${m.name}</div>
-        <div class="ms-req">${reqStr}</div>
+        <div class="ms-req">${req}</div>
         <div class="ms-reward">🎁 ${m.reward}</div>
-        ${!done?`<div class="ms-bar-bg"><div class="ms-bar-fill ${pid}" style="width:${overall}%"></div></div>`:''}
+        ${!done?`<div class="ms-bar-bg"><div class="ms-bar-fill" style="background:${p.color};width:${ov}%"></div></div>`:''}
       </div>
-      <span class="ms-status ${stC}">${stL}</span>
+      <span class="ms-status ${stC}">${done?'Achieved ✓':ov+'%'}</span>
     </div>`;
   }).join('');
+}
+
+// ─── SETTINGS ──────────────────────────────────────────────────────────────
+function renderSettings(){
+  // Player cards
+  document.getElementById('player-settings-list').innerHTML = state.players.map(p=>`
+    <div class="player-settings-card">
+      <div class="psc-header">
+        <div class="psc-dot" style="background:${p.color}"></div>
+        <div class="psc-name">${p.name}</div>
+      </div>
+      <div class="psc-body">
+        <div class="psc-field">
+          <label>Shot goal</label>
+          <input type="number" id="edit-shots-${p.id}" value="${p.shotGoal}" min="100" max="20000" />
+        </div>
+        <div class="psc-field">
+          <label>Plyo goal</label>
+          <input type="number" id="edit-plyo-${p.id}" value="${p.plyoGoal}" min="100" max="10000" />
+        </div>
+        <div class="psc-field">
+          <label>Skill goal</label>
+          <input type="number" id="edit-skill-${p.id}" value="${p.skillGoal}" min="5" max="200" />
+        </div>
+      </div>
+      <div class="psc-actions">
+        <button class="btn btn-sm btn-ghost" onclick="savePlayerGoals('${p.id}')">Save goals</button>
+        <button class="btn btn-sm btn-danger" onclick="removePlayer('${p.id}')">Remove</button>
+      </div>
+    </div>`).join('');
+
+  // Color swatches
+  const taken = new Set(state.players.map(p=>p.color));
+  const avail = PRESET_COLORS.filter(c=>!taken.has(c));
+  selectedColor = avail[0] || PRESET_COLORS[0];
+  document.getElementById('color-swatches').innerHTML = PRESET_COLORS.map(c=>
+    `<div class="color-swatch${c===selectedColor?' selected':''}" style="background:${c}" onclick="selectColor('${c}',this)"></div>`
+  ).join('');
+
+  // Prize rows
+  document.getElementById('prize-rows').innerHTML = state.prizes.map(pr=>`
+    <tr>
+      <td>${pr.icon} ${pr.name}</td>
+      <td><input type="text" id="prize-${pr.id}" value="${pr.reward||''}" placeholder="e.g. New stick" /></td>
+    </tr>`).join('');
+}
+
+function selectColor(c, el){
+  selectedColor = c;
+  document.querySelectorAll('.color-swatch').forEach(s=>s.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+function addPlayer(){
+  const name = document.getElementById('new-name').value.trim();
+  const shots = parseInt(document.getElementById('new-shots').value)||0;
+  if(!name){ showToast('Enter a name'); return; }
+  if(shots < 100){ showToast('Shot goal must be at least 100'); return; }
+  if(state.players.find(p=>p.name.toLowerCase()===name.toLowerCase())){ showToast('Name already taken'); return; }
+  const id = name.toLowerCase().replace(/\s+/g,'_') + '_' + Date.now();
+  state.players.push({ id, name, age:0, color:selectedColor, shotGoal:shots, plyoGoal:2000, skillGoal:40 });
+  state.logs[id] = { log:[], unlocked:[] };
+  saveState();
+  document.getElementById('new-name').value='';
+  document.getElementById('new-shots').value='';
+  renderSettings();
+  renderPlayerToggle();
+  renderHeroChart();
+  showToast(name + ' added!');
+}
+
+function savePlayerGoals(pid){
+  const p = getPlayer(pid);
+  p.shotGoal = parseInt(document.getElementById(`edit-shots-${pid}`).value)||p.shotGoal;
+  p.plyoGoal = parseInt(document.getElementById(`edit-plyo-${pid}`).value)||p.plyoGoal;
+  p.skillGoal = parseInt(document.getElementById(`edit-skill-${pid}`).value)||p.skillGoal;
+  saveState();
+  updateAll();
+  showToast(p.name + '\'s goals saved');
+}
+
+function removePlayer(pid){
+  if(state.players.length <= 1){ showToast('Can\'t remove the last player'); return; }
+  const p = getPlayer(pid);
+  if(!confirm(`Remove ${p.name} and all their data?`)) return;
+  state.players = state.players.filter(p=>p.id!==pid);
+  delete state.logs[pid];
+  if(activePlayer===pid) activePlayer=state.players[0].id;
+  saveState();
+  renderSettings();
+  renderPlayerToggle();
+  updateAll();
+  showToast(p.name + ' removed');
+}
+
+function savePrizes(){
+  state.prizes.forEach(pr=>{
+    const el=document.getElementById('prize-'+pr.id);
+    if(el) pr.reward = el.value.trim();
+  });
+  saveState();
+  renderHeroChart();
+  showToast('Prizes saved!');
 }
 
 // ─── TABS / NAV ────────────────────────────────────────────────────────────
@@ -676,31 +837,40 @@ function showTab(id,btn){
   btn.classList.add('active');
   if(id==='charts') setTimeout(renderCharts,50);
   if(id==='milestones') renderMilestones();
-  document.getElementById('chart-player-label').textContent=PLAYERS[activePlayer].name;
+  if(id==='settings') renderSettings();
+  document.getElementById('chart-player-label').textContent=getPlayer(activePlayer).name;
 }
 
 function setPlayer(pid,btn){
   activePlayer=pid;
-  document.querySelectorAll('.ptoggle').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');
-  document.getElementById('log-player-label').textContent=PLAYERS[pid].name;
-  document.getElementById('log-btn').className='btn btn-'+pid;
-  document.getElementById('chart-player-label').textContent=PLAYERS[pid].name;
+  renderPlayerToggle();
+  document.getElementById('log-player-label').textContent=getPlayer(pid).name;
+  document.getElementById('chart-player-label').textContent=getPlayer(pid).name;
   updateAll();
 }
 
 // ─── UTILS ─────────────────────────────────────────────────────────────────
-function updateAll(){ renderHeroChart(); renderGoals(); renderLog(); }
+function updateAll(){ renderHeroChart(); renderPlayerToggle(); renderGoals(); renderLog(); }
 
 function confirmReset(){
-  if(confirm('Reset all data for '+PLAYERS[activePlayer].name+'? Cannot be undone.')){
-    state[activePlayer]={log:[],unlocked:[]}; saveState(); updateAll();
-    showToast(PLAYERS[activePlayer].name+' reset to zero');
+  const p=getPlayer(activePlayer);
+  if(confirm(`Reset ${p.name}'s score to zero? Their history will be kept.`)){
+    state.logs[activePlayer].log.push({ts:Date.now(), reset:true});
+    state.logs[activePlayer].unlocked=[];
+    saveState(); updateAll();
+    showToast(p.name+' score reset — history kept');
+  }
+}
+
+function confirmResetAll(){
+  if(confirm('Reset ALL players\' scores to zero? History will be kept.')){
+    state.players.forEach(p=>{ state.logs[p.id].log.push({ts:Date.now(),reset:true}); state.logs[p.id].unlocked=[]; });
+    saveState(); updateAll(); showToast('All scores reset — history kept');
   }
 }
 
 function exportCSV(){
-  const log=state[activePlayer].log;
+  const log=state.logs[activePlayer]?.log||[];
   if(!log.length){ showToast('No data to export'); return; }
   const rows=[['Date','Type','Detail','Amount']];
   log.forEach(e=>{
@@ -710,19 +880,33 @@ function exportCSV(){
     if(e.skill) rows.push([d,'Skill',SKILL_L[e.skill]||e.skill,1]);
   });
   const csv=rows.map(r=>r.map(v=>'"'+v+'"').join(',')).join('\n');
-  const a=document.createElement('a');
-  a.href='data:text/csv,'+encodeURIComponent(csv);
-  a.download='hockey_'+activePlayer+'.csv'; a.click();
+  const a=document.createElement('a'); a.href='data:text/csv,'+encodeURIComponent(csv);
+  a.download='hockey_'+getPlayer(activePlayer).name+'.csv'; a.click();
+}
+
+function exportAllCSV(){
+  const rows=[['Player','Date','Type','Detail','Amount']];
+  state.players.forEach(p=>{
+    (state.logs[p.id]?.log||[]).forEach(e=>{
+      const d=new Date(e.ts).toLocaleDateString('en-CA');
+      if(e.shots) rows.push([p.name,d,'Shots',SHOT_L[e.shotType]||'Shots',e.shots]);
+      if(e.plyoRaw) rows.push([p.name,d,'Plyo',PLYO_L[e.plyoType]||'Plyo',e.plyoRaw]);
+      if(e.skill) rows.push([p.name,d,'Skill',SKILL_L[e.skill]||e.skill,1]);
+    });
+  });
+  if(rows.length===1){ showToast('No data to export'); return; }
+  const csv=rows.map(r=>r.map(v=>'"'+v+'"').join(',')).join('\n');
+  const a=document.createElement('a'); a.href='data:text/csv,'+encodeURIComponent(csv);
+  a.download='hockey_all_players.csv'; a.click();
 }
 
 function showToast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(toastTimer); toastTimer=setTimeout(()=>t.classList.remove('show'),2600); }
 
 function showUnlock(m){
-  const pid=activePlayer; const p=PLAYERS[pid];
+  const p=getPlayer(activePlayer);
   document.getElementById('unlock-icon').textContent=m.icon;
   document.getElementById('unlock-title').textContent=p.name+': '+m.name+'!';
   document.getElementById('unlock-desc').textContent='Reward unlocked: '+m.reward;
-  document.getElementById('unlock-btn').className='btn btn-'+pid;
   document.getElementById('unlock-card').classList.add('show');
   document.getElementById('overlay').classList.add('show');
 }
