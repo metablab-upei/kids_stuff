@@ -213,6 +213,7 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;}
     </div>
     <h1 id="page-title">Backyard <span>Hockey</span> Challenge</h1>
     <p>Summer 2026 · Charlottetown, PEI</p>
+    <div id="sync-status" style="font-size:11px;font-weight:600;color:rgba(255,255,255,0.4);margin-top:5px;letter-spacing:0.3px;">⚪ Local only</div>
   </header>
 
   <!-- HERO SHOT CHART -->
@@ -448,21 +449,127 @@ const CHALLENGES = [
   {cat:'skills',icon:'🤸',name:'Handle → deke → backhand',tgt:'3 of 5',desc:'Deke around a cone, finish high backhand.'},
 ];
 
+// ─── FIREBASE CONFIG ───────────────────────────────────────────────────────
+// 1. Go to https://console.firebase.google.com
+// 2. Create a project → Add a web app → copy the firebaseConfig values below
+// 3. Go to Firestore Database → Create database → Start in test mode
+// Replace the placeholder values with your own:
+const FIREBASE_CONFIG = {
+  apiKey:            "AIzaSyCh4pLwxsgLsB4awlqYa7BJKfr4zVw78QI",
+  authDomain:        "kidshockey-challenge.firebaseapp.com",
+  projectId:         "kidshockey-challenge",
+  storageBucket:     "kidshockey-challenge.firebasestorage.app",
+  messagingSenderId: "521904434762",
+  appId:             "1:521904434762:web:55fed62099051a657f00b3",
+};
+const FIRESTORE_DOC = "hockey/challenge"; // single shared document
+
 // ─── STATE ─────────────────────────────────────────────────────────────────
-function loadState() {
-  try {
-    const s = localStorage.getItem('hockey_v5');
-    if (s) return JSON.parse(s);
-  } catch(e){}
+function defaultState() {
   const logs = {};
   DEFAULT_PLAYERS.forEach(p => { logs[p.id] = {log:[], unlocked:[]}; });
   return { players: JSON.parse(JSON.stringify(DEFAULT_PLAYERS)), prizes: JSON.parse(JSON.stringify(DEFAULT_PRIZES)), logs };
 }
-function saveState(){ localStorage.setItem('hockey_v5', JSON.stringify(state)); }
 
-let state = loadState();
-// migrate: ensure every player has a logs entry
-state.players.forEach(p => { if(!state.logs[p.id]) state.logs[p.id]={log:[],unlocked:[]}; });
+let state = defaultState();
+let db = null;
+let syncTimeout = null;
+let usingFirebase = false;
+
+function initFirebase() {
+  try {
+    if (!FIREBASE_CONFIG.apiKey || FIREBASE_CONFIG.apiKey.startsWith('PASTE_')) {
+      console.warn('Firebase not configured — using localStorage fallback');
+      loadLocalState();
+      return;
+    }
+    // Dynamic import Firebase v9 compat (works in browsers, no build step)
+    const script1 = document.createElement('script');
+    script1.src = 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js';
+    script1.onload = () => {
+      const script2 = document.createElement('script');
+      script2.src = 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js';
+      script2.onload = () => {
+        firebase.initializeApp(FIREBASE_CONFIG);
+        db = firebase.firestore();
+        usingFirebase = true;
+        setSyncStatus('connecting');
+        // Subscribe to real-time updates
+        const [col, doc] = FIRESTORE_DOC.split('/');
+        db.collection(col).doc(doc).onSnapshot(snap => {
+          if (snap.exists) {
+            const remote = snap.data();
+            state = remote;
+            migrateState();
+            updateAll();
+            if (document.querySelector('.tab-pane.active')?.id === 'pane-settings') renderSettings();
+            if (document.querySelector('.tab-pane.active')?.id === 'pane-milestones') renderMilestones();
+          } else {
+            // First run — write defaults
+            saveState();
+          }
+          setSyncStatus('synced');
+        }, err => {
+          console.error('Firestore error:', err);
+          setSyncStatus('error');
+          loadLocalState();
+        });
+      };
+      document.head.appendChild(script2);
+    };
+    document.head.appendChild(script1);
+  } catch(e) {
+    console.error('Firebase init failed:', e);
+    loadLocalState();
+  }
+}
+
+function loadLocalState() {
+  try {
+    const s = localStorage.getItem('hockey_v5');
+    if (s) { state = JSON.parse(s); migrateState(); }
+  } catch(e) {}
+  setSyncStatus('local');
+  updateAll();
+}
+
+function migrateState() {
+  if (!state.players) state.players = JSON.parse(JSON.stringify(DEFAULT_PLAYERS));
+  if (!state.prizes)  state.prizes  = JSON.parse(JSON.stringify(DEFAULT_PRIZES));
+  if (!state.logs)    state.logs    = {};
+  state.players.forEach(p => { if (!state.logs[p.id]) state.logs[p.id] = {log:[], unlocked:[]}; });
+}
+
+function saveState() {
+  // Always write localStorage as fallback
+  try { localStorage.setItem('hockey_v5', JSON.stringify(state)); } catch(e) {}
+  // Debounce Firebase writes (avoid hammering on rapid input)
+  if (usingFirebase && db) {
+    setSyncStatus('saving');
+    clearTimeout(syncTimeout);
+    syncTimeout = setTimeout(() => {
+      const [col, doc] = FIRESTORE_DOC.split('/');
+      db.collection(col).doc(doc).set(state)
+        .then(() => setSyncStatus('synced'))
+        .catch(e => { console.error('Save failed:', e); setSyncStatus('error'); });
+    }, 600);
+  }
+}
+
+function setSyncStatus(status) {
+  const el = document.getElementById('sync-status');
+  if (!el) return;
+  const map = {
+    connecting: { text:'Connecting…',  color:'#f0a500', dot:'🟡' },
+    saving:     { text:'Saving…',      color:'#f0a500', dot:'🟡' },
+    synced:     { text:'Synced ✓',     color:'#1a7a4a', dot:'🟢' },
+    error:      { text:'Sync error',   color:'#c0392b', dot:'🔴' },
+    local:      { text:'Local only',   color:'#6b7e8f', dot:'⚪' },
+  };
+  const s = map[status] || map.local;
+  el.textContent = s.dot + ' ' + s.text;
+  el.style.color = s.color;
+}
 
 let activePlayer = state.players[0].id;
 let activeCat = 'all';
@@ -919,7 +1026,7 @@ function closeUnlock(){ document.getElementById('unlock-card').classList.remove(
 
 // ─── INIT ──────────────────────────────────────────────────────────────────
 renderChallenges();
-updateAll();
+initFirebase();
 </script>
 </body>
 </html>
